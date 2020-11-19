@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 MAINTAINER Elico Corp <webmaster@elico-corp.com>
 
 # Define build constants
@@ -10,15 +10,15 @@ ENV GIT_BRANCH=13.0 \
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 # Generate locales
-RUN apt update \
-  && apt -yq install locales \
+RUN apt-get update \
+  && apt-get -yq install locales \
   && locale-gen en_US.UTF-8 \
   && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
 # Install APT dependencies
 ADD sources/apt.txt /opt/sources/apt.txt
-RUN apt update \
-  && awk '! /^ *(#|$)/' /opt/sources/apt.txt | xargs -r apt install -yq
+RUN apt-get update \
+  && awk '! /^ *(#|$)/' /opt/sources/apt.txt | xargs -r apt-get install -yq
 
 # Create the odoo user
 RUN useradd --create-home --home-dir /opt/odoo --no-log-init odoo
@@ -39,7 +39,7 @@ RUN git clone --depth=1 https://github.com/odoo/odoo.git -b $GIT_BRANCH \
 ADD sources/odoo.conf /opt/odoo/etc/odoo.conf
 ADD auto_addons /opt/odoo/auto_addons
 
-User 0
+USER 0
 
 # Install Odoo python dependencies
 RUN pip3 install -r /opt/odoo/sources/odoo/requirements.txt
@@ -51,8 +51,8 @@ RUN pip3 install -r /opt/sources/pip.txt
 # Install wkhtmltopdf based on QT5
 ADD https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb \
   /opt/sources/wkhtmltox.deb
-RUN apt update \
-  && apt install -yq xfonts-base xfonts-75dpi \
+RUN apt-get update \
+  && apt-get install -yq xfonts-base xfonts-75dpi \
   && dpkg -i /opt/sources/wkhtmltox.deb
 
 # Startup script for custom setup
@@ -84,6 +84,10 @@ RUN from=$( awk '/^## Usage/{ print NR; exit }' /usr/share/man/man.txt ) && \
   head -n $to /usr/share/man/man.txt | \
   tail -n +$from | \
   tee /usr/share/man/help.txt > /dev/null
+
+RUN mkdir /var/log/odoo && touch /var/log/odoo/odoo.log
+RUN chown -R odoo:odoo /var/log/odoo
+ADD auto_addons/oca_dependencies.txt /opt/odoo/additional_addons
 
 # Use dumb-init as init system to launch the boot script
 ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb /opt/sources/dumb-init.deb

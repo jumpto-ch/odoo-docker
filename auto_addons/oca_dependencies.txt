@@ -1,1 +1,6 @@
 # Instructions: https://github.com/OCA/maintainer-quality-tools/blob/master/sample_files/oca_dependencies.txt
+account-invoicing https://github.com/OCA/account-invoicing.git 13.0
+bank-statement-import https://github.com/OCA/bank-statement-import.git 13.0
+l10n-switzerland https://github.com/OCA/l10n-switzerland.git 13.0
+project https://github.com/OCA/project.git 13.0
+web https://github.com/OCA/web.git 13.0
